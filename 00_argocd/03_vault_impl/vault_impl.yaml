@@ -55,14 +55,35 @@ spec:
         ha_enabled: "true"
         etcd_api: "v3"
     listener:
-      tcp:
-        address: "0.0.0.0:8200"
-        tls_cert_file: /vault/tls/server.crt
-        tls_key_file: /vault/tls/server.key
+      - tcp:
+          address: "0.0.0.0:8200"
+          tls_cert_file: /vault/tls/server.crt
+          tls_key_file: /vault/tls/server.key
     api_addr: https://vault.vault:8200
     telemetry:
       statsd_address: localhost:9125
     ui: true
+
+  ingress:
+    annotations:
+      kubernetes.io/ingress.allow-http: "false"
+      kubernetes.io/ingress.class: "nginx"
+      nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+      cert-manager.io/cluster-issuer: ca-issuer
+
+    spec:
+      rules:
+        - host: vault.k8s.intra
+          http:
+            paths:
+              - path: /
+                backend:
+                  serviceName: vault
+                  servicePort: 8200
+      tls:
+        - hosts:
+          - vault.k8s.intra
+          secretName: https-vault-secret
 
   externalConfig:
     policies:
@@ -70,9 +91,15 @@ spec:
         rules: path "secret/*" {
                  capabilities = ["create", "read", "update", "delete", "list"]
                }
+      - name: admin
+        rules: path "*" {
+                 capabilities = ["create", "read", "update", "delete", "list"]
+               }
+
 
     # The auth block allows configuring Auth Methods in Vault.
     # See https://www.vaultproject.io/docs/auth/index.html for more information.
+    # https://github.com/banzaicloud/bank-vaults/blob/2f9f1180803d6151bc37de19f68f2b13a6762cd0/vault-config.yml
     auth:
       - type: kubernetes
         roles:
@@ -82,6 +109,11 @@ spec:
             bound_service_account_namespaces: "*"
             policies: allow_secrets
             ttl: 1h
+      - type: userpass
+        users:
+          - username: admin
+            password: Password1
+            token_policies: admin
 
     secrets:
       - path: secret
