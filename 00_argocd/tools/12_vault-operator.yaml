@@ -141,3 +141,8 @@ spec:
   repo: "https://kubernetes-charts.banzaicloud.com"
   chart: vault-secrets-webhook
   targetNamespace: vault
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: demo-app
