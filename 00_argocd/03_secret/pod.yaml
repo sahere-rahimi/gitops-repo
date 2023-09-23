@@ -21,4 +21,4 @@ spec:
   volumes:
   - name: mysecretvol
     secret:
-      secretName: mysecret2
+      secretName: mysecret
