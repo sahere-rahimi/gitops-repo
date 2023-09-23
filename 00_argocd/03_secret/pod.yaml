@@ -10,15 +10,15 @@ spec:
   - image: busybox
     command: ["/bin/sh", "-c"]
     args:
-      - cat /tmp/mysecret/secret;
+      - cat /tmp/mysecret2/secret;
         sleep 3600
     imagePullPolicy: IfNotPresent
     name: busybox
     volumeMounts:
       - name: mysecretvol
-        mountPath: "/tmp/mysecret"
+        mountPath: "/tmp/mysecret2"
         readOnly: true
   volumes:
   - name: mysecretvol
     secret:
-      secretName: mysecret
+      secretName: mysecret2
